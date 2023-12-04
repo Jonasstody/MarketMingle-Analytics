@@ -1,7 +1,6 @@
 pandas>=0.24
 streamlit-lightweight-charts>=0.7.19
 st-pages>=0.4.5
-streamlit>=1.28.0
 yahooquery>=2.3.2
 yfinance>=0.2.31
 plotly==5.18.0
