@@ -424,6 +424,25 @@ class public():
             response = 'There was an error retrieving the answer. Please ensure that you provided the correct API key and that your OpenAI account has sufficient tokens.'
         return response
     
+    def get_financial_statements(ticker):
+        
+        income_statement = yf.Ticker(ticker).income_stmt
+        income_statement = income_statement.reindex(index=income_statement.index[::-1])
+        for element in income_statement.columns:
+            income_statement.rename(columns={element:element.strftime('%d.%m.%Y')})
+        
+        balance_sheet = yf.Ticker(ticker).balance_sheet
+        balance_sheet = balance_sheet.reindex(index=balance_sheet.index[::-1])
+        for element in balance_sheet.columns:
+            balance_sheet.rename(columns={element:element.strftime('%d.%m.%Y')})
+        
+        cash_flow = yf.Ticker(ticker).cash_flow
+        cash_flow = cash_flow.reindex(index=cash_flow.index[::-1])
+        for element in cash_flow.columns:
+            cash_flow.rename(columns={element:element.strftime('%d.%m.%Y')})
+        
+        return income_statement, balance_sheet, cash_flow
+    
     def get_h2h_general(ticker):
         pull_one = yq.Ticker(ticker).summary_profile[ticker]
         pull_two = yq.Ticker(ticker).financial_data[ticker]
