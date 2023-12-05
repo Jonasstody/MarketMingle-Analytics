@@ -1,6 +1,7 @@
 import streamlit as st
 import yahooquery as yq
 import general_worker as gw
+from data_loader import public, private
 
 
 st.set_page_config(layout='wide')
@@ -56,16 +57,15 @@ if is_public:
     st.title(name)
     income_statment_container, balance_sheet_container, cash_flow_container = st.tabs(['Income Statement','Balance Sheet','Statement of Cash Flows'])
 
+    income_statement, balance_sheet, cash_flow = public.get_financial_statements(ticker)
+    
     with income_statment_container:
-        income_statement = yq.Ticker(ticker).income_statement().set_index('asOfDate').transpose()
         st.dataframe(income_statement,use_container_width=True,height=800)
         
     with balance_sheet_container:
-        balance_sheet = yq.Ticker(ticker).balance_sheet().set_index('asOfDate').transpose()
         st.dataframe(balance_sheet,use_container_width=True,height=800)
         
     with cash_flow_container:
-        cash_flow = yq.Ticker(ticker).cash_flow().set_index('asOfDate').transpose()
         st.dataframe(cash_flow,use_container_width=True,height=800)
         
 elif is_sus_private:
