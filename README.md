@@ -1,6 +1,6 @@
 # MarketMingle-Analytics
 
-###Demystify the Market: Your Path to Effortless Company Comparisons!
+### Demystify the Market: Your Path to Effortless Company Comparisons!
 
 
 Webversion available under: https://marketmingleanalytics.streamlit.app
