@@ -166,85 +166,17 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
         
         
         st.divider()
-        #the below section allows for the usage of an openai api key, for simplicity reasons we store the key in toml 
-        #since we store it in an extra file, we can use the key even after restarting the application
-        if toml.load('user_config.toml')['openai_api']['key'] != '':
-            #AI opinion (only placholder) & company leadership
-            ai_and_leadership_container = st.container()
-            ai_container, leadership_container = ai_and_leadership_container.columns([1,1])
-            ai_container.subheader('What do famous investors think?')
-            with ai_container.expander('Change API key?'):
-                input_form = st.form('Init API')
-                with input_form:
-                    open_ai_doc_link = 'https://help.openai.com/en/articles/4936850-where-do-i-find-my-api-key'
-                    st.write(f'''Find information about your personalized API key here {open_ai_doc_link}. To delete your key, keep the input field empty and press the update button.''')
-                    text_input, restart_button = st.columns([2,1])
-                    with text_input:
-                        openai_key_input = st.text_input('api_key_input',placeholder='Put your key here.',label_visibility='collapsed')
-                    with restart_button:
-                        issubmit = st.form_submit_button('Update Key',use_container_width=True)
-                        if issubmit:
-                            #update API key in toml file and then restart the application
-                            toml_content = toml.load('user_config.toml')
-                            toml_content['openai_api']['key'] = openai_key_input
-                            toml_file = open('user_config.toml','w')
-                            toml.dump(toml_content,toml_file)
-                            toml_file.close()
-                            st.rerun()
+
+        top_inst_holders_container, leadership_container = st.columns([1.4,1])
+        top_inst_holders_container.subheader('Top Institutional Holders',help='To isolate an item, double-click the name. To blend it out, single-click the name.')
+        fig = public.get_top_inst_holders(ticker)
+        try:
+            top_inst_holders_container.plotly_chart(fig,use_container_width=True)
+        except:
+            top_inst_holders_container.write(fig)
             
-            ai_one_container, ai_two_container, ai_three_container = ai_container.tabs(['AI Warren Buffet','AI Peter Lynch','AI Benjamin Graham'])
-            ai_one_con = ai_one_container.empty()
-            ai_two_con = ai_two_container.empty()
-            ai_three_con = ai_three_container.empty()
-            ai_one_con.write('Loading...')
-            ai_two_con.write('Loading...')
-            ai_three_con.write('Loading...')            
-            
-            leadership_container.subheader('Company Leadership')
-            leadership_container.dataframe(public.get_company_leadership(ticker),hide_index=True,use_container_width=True)
-            
-            st.divider()
-            #Top institutional holders
-            top_inst_holders_container_main = st.container()
-            top_inst_holders_container, helper_container = top_inst_holders_container_main.columns([6,1])
-            top_inst_holders_container.subheader('Top Institutional Holders',help='To isolate an item, double-click the name. To blend it out, single-click the name.')
-            fig = public.get_top_inst_holders(ticker)
-            try:
-                top_inst_holders_container.plotly_chart(fig,use_container_width=True)
-            except:
-                top_inst_holders_container.write(fig)
-        
-        else:
-            top_inst_holders_container, leadership_container = st.columns([1.4,1])
-            top_inst_holders_container.subheader('Top Institutional Holders',help='To isolate an item, double-click the name. To blend it out, single-click the name.')
-            fig = public.get_top_inst_holders(ticker)
-            try:
-                top_inst_holders_container.plotly_chart(fig,use_container_width=True)
-            except:
-                top_inst_holders_container.write(fig)
-                
-            leadership_container.subheader('Company Leadership')
-            leadership_container.dataframe(public.get_company_leadership(ticker),hide_index=True,use_container_width=True)
-            
-            st.divider()
-            with st.expander(f'Interested in opinions on {st.session_state.name}?'):
-                input_form = st.form('Init API')
-                with input_form:
-                    open_ai_doc_link = 'https://help.openai.com/en/articles/4936850-where-do-i-find-my-api-key'
-                    st.write(f'''To get the opinion of famous Investors' AI clones on {st.session_state.name}, please provide your OpenAI (ChatGPT) API key. Find information on how to get your personalized API key here {open_ai_doc_link}.''')
-                    text_input, restart_button = st.columns([4,1])
-                    with text_input:
-                        openai_key_input = st.text_input('api_key_input',placeholder='Put your key here.',label_visibility='collapsed')
-                    with restart_button:
-                        issubmit = st.form_submit_button('Use Key',use_container_width=True)
-                        if issubmit:
-                            #update API key in toml file and then restart the application
-                            toml_content = toml.load('user_config.toml')
-                            toml_content['openai_api']['key'] = openai_key_input
-                            toml_file = open('user_config.toml','w')
-                            toml.dump(toml_content,toml_file)
-                            toml_file.close()
-                            st.rerun()
+        leadership_container.subheader('Company Leadership')
+        leadership_container.dataframe(public.get_company_leadership(ticker),hide_index=True,use_container_width=True)
                 
         st.divider()
         #10 recent news
@@ -261,18 +193,6 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
                     st.markdown(f'<a style="color: white;" href="{link}">{title} ({publisher}, {date})</a></span>', unsafe_allow_html=True)
             except:
                 st.write(search)
-        
-        #fill AI section
-        if toml.load('user_config.toml')['openai_api']['key'] != '':
-            try:
-                buffets_opinion = public.get_ai_opinion('buffet',st.session_state.ticker_symbol,st.session_state.name)
-                lynchs_opinion = public.get_ai_opinion('lynch',st.session_state.ticker_symbol,st.session_state.name)
-                grahams_opinion = public.get_ai_opinion('soros',st.session_state.ticker_symbol,st.session_state.name)
-                ai_one_con.write(buffets_opinion)
-                ai_two_con.write(lynchs_opinion)
-                ai_three_con.write(grahams_opinion)
-            except:
-                pass
         
     elif is_sus_private:
         st.session_state['name'] = 'n/a'
