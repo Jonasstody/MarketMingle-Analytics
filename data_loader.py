@@ -5,10 +5,6 @@ import yfinance as yf
 #general
 import pandas as pd
 from datetime import datetime as dt
-import toml
-
-#openai 
-from openai import OpenAI
 
 #graphing
 import matplotlib.pyplot as plt
@@ -381,49 +377,6 @@ class public():
             news =  'Not Available.'
 
         return news
-    
-    def get_ai_opinion(investor, ticker, company_name):
-        try:
-            if investor == 'buffet':
-                name = 'Warren Buffet'
-            elif investor == 'lynch':
-                name = 'Peter Lynch'
-            elif investor == 'graham':
-                name = 'Benjamin Graham'
-            
-            fin_data = yq.Ticker(ticker).all_financial_data()
-            general_pull = yq.Ticker(ticker).asset_profile[ticker]
-            
-            needed_values = ['HQ Country','Company Description','Industry','Sector','Number of Full Time Employees']
-            search_values = ['country','longBusinessSummary','industry','sector','fullTimeEmployees']
-            
-            general_values = {}
-            
-            for needed_value, search_value in zip(needed_values,search_values):
-                try:
-                    general_values[needed_value] = general_pull[search_value]
-                except:
-                    pass
-                
-            #build request
-            request_string = f'''Pretend to be the famous investor {name}, and consider the following general information 
-            about the company {company_name}: {general_values} in combination with the following financial data: {fin_data}. 
-            Stay in your role and give a short assessment about what you like and dislike about the company. 
-            If the information seems insufficient still stay in role and give the best possible answer without 
-            requesting more data or angles. Keep the answer to a maximum of 3 to 4 sentences and only provide your viewpoint in your role.
-            Should it be impossible to return a proper answer return the following text and nothing else: {name} is currently
-            stuck in a call, but will be back soon.'''
-            
-            #make request   
-            response = OpenAI(api_key=toml.load('user_config.toml')['openai_api']['key']).chat.completions.create(
-                messages=[
-                    {'role': 'user',
-                    'content': request_string}],
-                model="gpt-3.5-turbo") 
-            
-        except:
-            response = 'There was an error retrieving the answer. Please ensure that you provided the correct API key and that your OpenAI account has sufficient tokens.'
-        return response
     
     def get_financial_statements(ticker):
         
