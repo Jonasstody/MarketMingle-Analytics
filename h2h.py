@@ -234,6 +234,7 @@ if st.session_state.search_input != 'n/a' and st.session_state.search_input_h2h 
                 st.markdown('<div><br><br></div>',unsafe_allow_html=True)
                 data = public.get_h2h_fin_ratios(ticker,ticker_h2h)
                 for element in data:
+                    st.markdown('<div><br></div>',unsafe_allow_html=True)
                     build_h2h_row(element[0],element[1],element[2],3)
                     
             with earnings_container:
