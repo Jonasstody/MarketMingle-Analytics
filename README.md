@@ -1,5 +1,7 @@
 # MarketMingle-Analytics
 
+"Demystify the Market: Your Path to Effortless Company Comparisons!"
+
 Webversion available under: https://marketmingleanalytics.streamlit.app
 
 For optimal use and to take advantage of all functonalities please run the streamlit application locally on your machine. To achieve this follow these steps:
