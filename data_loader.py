@@ -327,6 +327,7 @@ class public():
             sum_perc = 100-(inst_holders['% Out'].sum())
             inst_holders.loc[len(inst_holders.index)] = ['Rest','n/a','n/a',sum_perc,'n/a']
             fig = px.pie(inst_holders,values='% Out',names='Holder')
+            fig.update_traces(textposition='inside', textinfo='percent')
         except:
             fig = 'n/a'
         
