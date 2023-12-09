@@ -9,7 +9,6 @@ import general_worker as gw
 #other
 import pandas as pd
 
-
 #GERNERAL 
 #strucure (in the works): one respective file that handles the visuals for the subpage and helper files for background activity e.g. data pulls, building chart
 #the code has all basic functionalities to add a secondary search for private companies incase the public company search does not return any results, at the moment not used due to time constraints
