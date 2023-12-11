@@ -1,4 +1,4 @@
-#Streamlit & Components - add credits
+#Streamlit & Components
 import streamlit as st
 from st_pages import Page, show_pages
 
@@ -11,14 +11,27 @@ import pandas as pd
 import toml
 
 
-#GERNERAL 
-#strucure (in the works): one respective file that handles the visuals for the subpage and helper files for background activity e.g. data pulls, building chart
-#the code has all basic functionalities to add a secondary search for private companies incase the public company search does not return any results, at the moment not used due to time constraints
+# GERNERAL 
 
-#credit html & css code mostly to chatgpt + add explanation why used rather than pure streamlit whenever used
+# ABOUT
+# visit the web version of this app under https://marketmingleanalytics.streamlit.app/ 
+# be advised that the AI feature has been removed in the web version, to avoid relying on an account system that would be neccessary to store the respective OpenAI keys
+# the full code and more can be found under https://github.com/Jonasstody/MarketMingle-Analytics
 
-#application will always start up in dark theme, change to light theme is possible, but will distort some of the graphics; 
-#hard to implement/fix as streamlit is currently not able to provide the current theme through a python request, so no chance to change individual elements dynamically
+# STRUCTURE
+# one respective file that handles the visuals for the subpage and two helper files (data_loader.py & general_worker.py) to handle data operations and data pulls
+# the code has all basic functionalities to add a secondary search for private companies incase the public company search does not return any results, at the moment not in use
+
+# CREDITS
+# for CSS & HTML code parts in a streamlit.markdown(allow_unsafe_html=True) context we relied on ChatGPT
+# add credits for packages
+
+# APPEARANCE
+# The App is set to always start up in its dark theme (via the .streamlit/config.toml file), we chose to solely rely on the dark theme as streamlit currently does not offer to dynamically fetch the current theme used, 
+# so non-streamlit parts, like all charts in this app, can not be adjusted to the theme and therefore a different theme would distort the user interface 
+# Therefore users are advised to not change the theme in the apps settings, a possibility we unfortunately can't prevent
+
+
 
 st.set_page_config(layout='wide')
 
