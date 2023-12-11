@@ -3,20 +3,26 @@ import yahooquery as yq
 import yfinance as yf
 
 #general
-import pandas as pd
-from datetime import datetime as dt
-import toml
+import pandas as pd #data handling
+from datetime import datetime as dt #date and time operations
+import toml #storage
 
-#openai 
+#(ChatGPT)
 import openai
 
 #graphing
-import matplotlib.pyplot as plt
-from streamlit_lightweight_charts import renderLightweightCharts
-import plotly.express as px
+import matplotlib.pyplot as plt #basic charting
+from streamlit_lightweight_charts import renderLightweightCharts #easy to build TradingView style charts in streamlit
+import plotly.express as px #advanced charting
+
+
+#2 Classes: public & private 
+#private is currently not employed, basis for further builds incase one wants to enable searches for private companies
+#public contains all data pulls needed in the pages to display one or two public companies
 
 class public():
     def get_comp_desc(ticker):
+        #General Company Description
         try:
             desc = yq.Ticker(ticker).asset_profile[ticker]['longBusinessSummary']
         except:
@@ -24,6 +30,7 @@ class public():
         return desc
 
     def get_general_company_kpis(ticker):
+        #Headquarter Location (City, Country), Full Time Employees, Website Link, Sector, Industry
         needed_values = ['HQ','FTE','Website','Sector','Industry']
         search_values = ['city','fullTimeEmployees','website','sector','industry']
         search = yq.Ticker(ticker).summary_profile[ticker]
@@ -46,10 +53,14 @@ class public():
         return return_dict
 
     def get_current_price_data(ticker):
+        #current price and related kpis; only market open times are considered, i.e. if the exchange is currently closed the latest closing price is displayed
+        # data sourced from two pulls
         needed_values = ['currency','Market Cap','exchange','date','time','current_price','change','Forward P/E','Beta (5y Monthly)','Dividend Yield (trailing)']
         search_values = ['currency','marketCap','exchangeName','regularMarketTime','regularMarketTime','regularMarketPrice','regularMarketChangePercent','forwardPE','beta','trailingAnnualDividendYield']
         search_one = yq.Ticker(ticker).summary_detail[ticker]
         search_two = yq.Ticker(ticker).price[ticker]
+        
+        # in case one pull fails (type=str)
         if isinstance(search_one,str):
             search = search_two
         elif isinstance(search_two,str):
@@ -97,6 +108,8 @@ class public():
         return base_dict['current_price'], base_dict['change'], quote_caption, table
 
     def get_hist_price_chart(ticker,timeframe,frequency):
+        #full pull for historic price data, for further insight into used timeframes and frequencies check main.py in the price chart section
+        #use of streamlit_lightweight_charts
         hist_data = pd.DataFrame(yf.Ticker(ticker).history(period=timeframe,interval=frequency)[['Close']]).to_dict('index')
         temp_hist_data = []
         for element in hist_data.keys():
@@ -143,6 +156,9 @@ class public():
         ], timeframe)
 
     def get_fin_chart(ticker,company_name):
+        #Revenue as bars, net income margin and EBIDTA margin as lines
+        #use of matplotlib
+        #EBITDA not always availabe therefore two possibilities for build
         try:
             df = yq.Ticker(ticker).income_statement()
             try:
@@ -188,7 +204,6 @@ class public():
                 ax2.plot(final_df.index, final_df['Net Profit Margin'], accent_one,linewidth=1, label='Net Profit Margin',linestyle='dashed',marker='o')
                 ax2.set_ylim(ax2.get_ylim()[0], ax2.get_ylim()[1]*1.5)
                 
-                #next lines mostly chatgpt, credit?
                 for x, y in zip(final_df.index, final_df['Net Profit Margin']):
                     ax2.annotate(f'{y*100:.1f}%', (x, y), textcoords="offset points", xytext=(0, 10), ha='center', color=accent_one,bbox=dict(boxstyle='round,pad=0.5', edgecolor=accent_one, facecolor=base_color))
                 
@@ -249,10 +264,14 @@ class public():
         return fig, info_text, helper_text
 
     def get_key_fin_stats(ticker):
+        # general financial KPIs, see which values below
+        # data sourced from two pulls
         needed_values = ['Enterprise Value','EV/Revenue','EV/EBITDA','Debt/Equity','Quick Ratio','Current Ratio','Return on Assets','Return on Equity']
         search_values = ['enterpriseValue','enterpriseToRevenue','enterpriseToEbitda','debtToEquity','quickRatio','currentRatio','returnOnAssets','returnOnEquity']
         search_one = yq.Ticker(ticker).key_stats[ticker]
         search_two = yq.Ticker(ticker).financial_data[ticker]
+        
+        # in case one pull fails (type=str)
         if isinstance(search_one,str):
             search = search_two
         elif isinstance(search_two,str):
@@ -286,6 +305,8 @@ class public():
             return return_dict, 'n/a'
 
     def get_top_inst_holders(ticker):
+        # returns pie chart with the top 10 institutional investors, displaying their share of the overall company
+        # plotly.express used
         try:
             inst_holders = yf.Ticker(ticker).get_institutional_holders()
         except:
@@ -334,6 +355,7 @@ class public():
         return fig
 
     def get_company_leadership(ticker):
+        # returns df containing Name, Age and Title of the top company officers
         try:
             comp_officers = yq.Ticker(ticker).company_officers
         except:
@@ -351,7 +373,7 @@ class public():
         return comp_officers
 
     def get_recent_news(ticker):
-        
+        # returns df containing title, publisher, link & publish date for recent news
         try:
             news = pd.DataFrame(yf.Ticker(ticker).get_news())
         except:
@@ -361,7 +383,8 @@ class public():
                 news.drop(item_to_drop, axis=1, inplace=True)
             except:
                 pass
-            
+        
+        #helper function
         def reformat_time(time):
             return dt.fromtimestamp(time).strftime('%d.%m.%Y')
         
@@ -383,6 +406,7 @@ class public():
         return news
     
     def get_ai_opinion(investor, ticker, company_name):
+        # build and execution of request to ChatGPT, also financials sourced
         try:
             if investor == 'buffet':
                 name = 'Warren Buffet'
@@ -392,7 +416,7 @@ class public():
                 name = 'Benjamin Graham'
             
             fin_data = yq.Ticker(ticker).all_financial_data()
-            #build request
+            # build request
             request_string = f'''Pretend to be the famous investor {name}, and consider the following information 
                     about the company {company_name}: {fin_data}. 
                     Stay in your role and give a short assessment about what you like and dislike about the company. 
@@ -403,7 +427,8 @@ class public():
                     Should it be truly impossible to return a proper answer return the following text and nothing else: {name} is currently
                     stuck in a call, but will be back soon.'''
             
-            #make request   
+            # make request   
+            # load api key from user_config.toml file 2 
             openai.api_key = toml.load('user_config.toml')['openai_api']['key']
             response = openai.chat.completions.create(
                 messages=[
@@ -418,7 +443,7 @@ class public():
         return response
     
     def get_financial_statements(ticker):
-        
+        # pulling the full financial statements & minor reformatting
         income_statement = yf.Ticker(ticker).income_stmt
         income_statement = income_statement.reindex(index=income_statement.index[::-1])
         for element in income_statement.columns:
@@ -437,14 +462,19 @@ class public():
         return income_statement, balance_sheet, cash_flow
     
     def get_h2h_general(ticker):
+        # data sourced from two pulls
+        # vega lite chart element for esg scores
         pull_one = yq.Ticker(ticker).summary_profile[ticker]
         pull_two = yq.Ticker(ticker).financial_data[ticker]
+        
+        # in case one pull fails (type=str)
         if isinstance(pull_one,str):
             search = pull_two
         elif isinstance(pull_two,str):
             search = pull_one
         else:
             search = pull_one | pull_two
+            
         needed_values = ['sector','industry','fullTimeEmployees','hq','financialCurrency','recommendationKey','esg_risk']
         return_dict = {}
         for value in needed_values:
@@ -453,6 +483,7 @@ class public():
                     return_dict[value] = f''' {search['city']},  {search['country']}'''
                 elif value == 'esg_risk':
                     try:
+                        # third pull for esg scores
                         data = yq.Ticker(ticker).esg_scores[ticker]
                         df_data = pd.DataFrame({'scores':['Environmental Risk', 'Social Risk', 'Governance Risk'],
                                                 'start':[0, data['environmentScore'], data['socialScore']+data['environmentScore']],
@@ -460,7 +491,7 @@ class public():
             
                         total = data['governanceScore']+data['socialScore']+data['environmentScore']
 
-                        #vega lite chart eleement
+                        #esg chart - supported by ChatGPT for deployment
                         chart = {'$schema':'https://vega.github.io/schema/vega-lite/v2.json',
                                 'data':{'values':df_data.to_dict(orient='records')},
                                 'layer':[{'mark':{'type':'bar', 'color':'red'},
@@ -492,6 +523,9 @@ class public():
         return return_dict
     
     def build_h2h_relative_price_chart(ticker_init,ticker_h2h,timeframe,frequency):
+        # relative (% change) chart containing the two compared companies
+        # streamlit_light_charts used
+        # for information on used timeframes & frequencies of the data check main.py
         hist_data_init = pd.DataFrame(yf.Ticker(ticker_init).history(period=timeframe,interval=frequency)[['Close']]).to_dict('index')
         hist_data_h2h = pd.DataFrame(yf.Ticker(ticker_h2h).history(period=timeframe,interval=frequency)[['Close']]).to_dict('index')
         
@@ -571,7 +605,9 @@ class public():
         ], timeframe)
         
     def get_stock_movements_h2h(ticker_init, ticker_h2h):
-        
+        # returns % change for certain timeframes of two stocks
+        # for information on used timeframes & frequencies of the data check table below
+    
         periods = [['1 Day','1d','1m'],
                     ['1 Month','1mo','1h'], 
                     ['6 Months','6mo','1h'],
@@ -603,6 +639,9 @@ class public():
         return return_list
     
     def load_h2h_revenue_and_profitability_charts(ticker_init, ticker_h2h, name_init, name_h2h):
+        # build of all four charts: Revenue annualy & quarterly + Net Income annualy & quarterly
+        # in case the used currencies of the two companies do not match, the financials of the secondary company is converted to the initial companies currency 
+        
         inc_stmt_a_init = yq.Ticker(ticker_init).income_statement(trailing=False)[['asOfDate','currencyCode','periodType','TotalRevenue','NetIncome']]
         inc_stmt_a_init['asOfDate'] = inc_stmt_a_init['asOfDate'].dt.strftime('%d-%m-%Y')
         
@@ -615,6 +654,7 @@ class public():
         inc_stmt_q_h2h = yq.Ticker(ticker_h2h).income_statement(frequency='q',trailing=False)[['asOfDate','currencyCode','periodType','TotalRevenue','NetIncome']]
         inc_stmt_q_h2h['asOfDate'] = inc_stmt_q_h2h['asOfDate'].dt.strftime('%d-%m-%Y')
 
+        #helper function for axis naming
         def quarter_check(date_str):
             if date_str[:5] == '31-03':
                 quarter = 'Q1'
@@ -626,6 +666,7 @@ class public():
                 quarter = 'Q4'
             return quarter
 
+        #content for info text
         end_fin_year_init = inc_stmt_a_init['asOfDate'].to_list()[0][:5].replace('-','.')
         end_fin_year_h2h = inc_stmt_a_h2h['asOfDate'].to_list()[0][:5].replace('-','.')
 
@@ -703,6 +744,7 @@ class public():
             net_income = int(inc_stmt_q_h2h.loc[inc_stmt_q_h2h['asOfDate']==element]['NetIncome'].iloc[0]/exchange_rate)
             data_chart_two_q.append({'Company':company,'Period':period,'Value':net_income})
             
+        # helper function to build teh respective graphs
         def build_chart(data):
             chart = {"data": {"values": data},
                     "mark": "bar",
@@ -723,6 +765,7 @@ class public():
         
         
     def get_h2h_fin_ratios(ticker_init,ticker_h2h):
+        #reliance on previous funtion to fetch needed kpis
         data_init, curr_init = public.get_key_fin_stats(ticker_init)
         data_h2h, curr_h2h = public.get_key_fin_stats(ticker_h2h)
 
@@ -735,9 +778,13 @@ class public():
         return return_list
     
     def get_earnings_chart_h2h(ticker_init,ticker_h2h):
+        # returns scatter plot with EPS estimates vs actuals for 4 quarters
+        # plotly.express used
         data_init = yq.Ticker(ticker_init).earnings[ticker_init]['earningsChart']['quarterly']
         data_h2h = yq.Ticker(ticker_h2h).earnings[ticker_h2h]['earningsChart']['quarterly']
         
+        
+        #collect data & get fitting labels 'beat' / 'miss' / ''
         consolidated_data = []
         for element in data_init:
             if element['actual'] > element['estimate']:
