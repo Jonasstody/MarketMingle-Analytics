@@ -15,7 +15,7 @@ import toml
 
 # ABOUT
 # visit the web version of this app under https://marketmingleanalytics.streamlit.app/ 
-# be advised that the AI feature has been removed in the web version, to avoid relying on an account system that would be neccessary to store the respective OpenAI keys
+# be advised that the AI feature has been removed in the web version
 # the full code and more can be found under https://github.com/Jonasstody/MarketMingle-Analytics
 
 # STRUCTURE
