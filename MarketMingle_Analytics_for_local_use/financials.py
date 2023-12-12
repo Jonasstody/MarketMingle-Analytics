@@ -6,21 +6,17 @@ from data_loader import public, private
 
 st.set_page_config(layout='wide')
 
-#initalize neccessary var
+# initalize neccessary streamlit.session_state variables
 if 'search_input' not in st.session_state:
     st.session_state['search_input'] = 'n/a'
-    
-if 'ticker_symbol' or 'name' not in st.session_state:
-    st.session_state['ticker_symbol'] = 'n/a'
-    st.session_state['name'] = 'n/a'
 
 is_public = False
 is_sus_private = False
 is_private = False
 
-#search bar & button as streamlit form
-#if previous search in the same session exists, search is automatically restarted, otherwise initial search is started
-if st.session_state.search_input != 'n/a': #search_input is used as a cached variable across pages and for usage comment above
+# search bar & button as streamlit form
+# if previous search in the same session exists, search is automatically restarted, otherwise initial search is started
+if st.session_state.search_input != 'n/a': # search_input is used as a cached variable across pages and for usage comment above
     is_public, is_sus_private, ticker, name = gw.check_if_public(st.session_state.search_input)
     with st.form(key='seach_bar'):
         search_bar, search_button = st.columns([5,1])
@@ -32,6 +28,7 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
                 st.session_state.search_input = search_name
                 is_public, is_sus_private, ticker, name = gw.check_if_public(search_name)
 
+# fallback search bar build incase no previous search exists
 else:
     with st.form(key='search_bar_start'):
         search_bar, search_button = st.columns([5,1])
@@ -43,7 +40,7 @@ else:
                 st.session_state.search_input = search_name
                 is_public, is_sus_private, ticker, name = gw.check_if_public(search_name)
                 
-#remove border around search bar & button
+# remove border around search bar & button (all st.form elements)
 remove_border_search = r'''
     <style>
         [data-testid='stForm'] {border: 0px}
@@ -52,7 +49,7 @@ remove_border_search = r'''
 st.markdown(remove_border_search, unsafe_allow_html=True)
 
 
-#Main functionality
+# public company match
 if is_public:
     st.title(name)
     income_statment_container, balance_sheet_container, cash_flow_container = st.tabs(['Income Statement','Balance Sheet','Statement of Cash Flows'])
@@ -68,11 +65,13 @@ if is_public:
     with cash_flow_container:
         st.dataframe(cash_flow,use_container_width=True,height=800)
         
+# possible check if private
 elif is_sus_private:
     st.session_state['name'] = 'n/a'
     st.session_state['ticker'] = 'n/a'
     if gw.check_if_private(st.session_state.search_input):
         pass
     
+# if public & private company search failed
 elif is_private:
     pass

@@ -16,9 +16,9 @@ from streamlit_lightweight_charts import renderLightweightCharts #easy to build 
 import plotly.express as px #advanced charting
 
 
-#2 Classes: public & private 
-#private is currently not employed, basis for further builds incase one wants to enable searches for private companies
-#public contains all data pulls needed in the pages to display one or two public companies
+# 2 Classes: public & private 
+# private is currently not employed, basis for further builds incase one wants to enable searches for private companies
+# public contains all data pulls needed in the pages to display one or two public companies
 
 class public():
     def get_comp_desc(ticker):
@@ -30,7 +30,7 @@ class public():
         return desc
 
     def get_general_company_kpis(ticker):
-        #Headquarter Location (City, Country), Full Time Employees, Website Link, Sector, Industry
+        # Headquarter Location (City, Country), Full Time Employees, Website Link, Sector, Industry
         needed_values = ['HQ','FTE','Website','Sector','Industry']
         search_values = ['city','fullTimeEmployees','website','sector','industry']
         search = yq.Ticker(ticker).summary_profile[ticker]
@@ -53,7 +53,7 @@ class public():
         return return_dict
 
     def get_current_price_data(ticker):
-        #current price and related kpis; only market open times are considered, i.e. if the exchange is currently closed the latest closing price is displayed
+        # current price and related kpis; only market open times are considered, i.e. if the exchange is currently closed the latest closing price is displayed
         # data sourced from two pulls
         needed_values = ['currency','Market Cap','exchange','date','time','current_price','change','Forward P/E','Beta (5y Monthly)','Dividend Yield (trailing)']
         search_values = ['currency','marketCap','exchangeName','regularMarketTime','regularMarketTime','regularMarketPrice','regularMarketChangePercent','forwardPE','beta','trailingAnnualDividendYield']
