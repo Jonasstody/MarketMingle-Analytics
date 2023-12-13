@@ -6,6 +6,8 @@
 # ABOUT
 visit the web version of this app under https://marketmingleanalytics.streamlit.app/
 
+Github: https://github.com/Jonasstody/MarketMingle-Analytics
+
 be advised that the AI feature has been removed in the web version
 
 the full code for local deployment can be found under in the /MarketMingle_Analytics_for_local_use folder
