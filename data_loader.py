@@ -743,8 +743,9 @@ class public():
         data_h2h = yq.Ticker(ticker_h2h).earnings[ticker_h2h]['earningsChart']['quarterly']
         
         
-        #collect data & get fitting labels 'beat' / 'miss' / ''
+        # collect data & get fitting labels 'beat' / 'miss' / ''
         consolidated_data = []
+        # sort raw data into frame + add label ('beat'/'miss'/'')
         for element in data_init:
             if element['actual'] > element['estimate']:
                 caption = 'beat'
@@ -754,7 +755,7 @@ class public():
                 caption = 'miss'
             consolidated_data.append({'company':ticker_init.upper(),'id':f'{ticker_init.upper()} Actual','type':'Actual','timeframe':element['date'],'value':element['actual'],'caption':caption})
             consolidated_data.append({'company':ticker_init.upper(),'id':f'{ticker_init.upper()} Estimate','type':'Estimate','timeframe':element['date'],'value':element['estimate']})
-        
+        # same for h2h company
         for element in data_h2h:
             if element['actual'] > element['estimate']:
                 caption = 'beat'
@@ -764,9 +765,10 @@ class public():
                 caption = 'miss'
             consolidated_data.append({'company':ticker_h2h.upper(),'id':f'{ticker_h2h.upper()} Actual','type':'Actual','timeframe':element['date'],'value':element['actual'],'caption':caption})
             consolidated_data.append({'company':ticker_h2h.upper(),'id':f'{ticker_h2h.upper()} Estimate','type':'Estimate','timeframe':element['date'],'value':element['estimate']})
-            
+        
         consolidated_data = pd.DataFrame(consolidated_data)    
 
+        # set color scheme
         color_map = {f'{ticker_init.upper()} Actual':'rgb(229,61,62)',
                     f'{ticker_init.upper()} Estimate':'rgb(255,173,174)',
                     f'{ticker_h2h.upper()} Actual':'rgb(177,156,217)',
@@ -775,6 +777,7 @@ class public():
         fig = px.scatter(consolidated_data, x='timeframe', y='value', color='id', symbol='type',
                 text='caption', hover_name='id',color_discrete_map=color_map)
 
+        # adjust figure
         fig.update_traces(textposition='bottom right')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5))
         fig.update_layout(xaxis=dict(title_text=''),yaxis=dict(title_text='Earnings per Share'))
@@ -782,6 +785,7 @@ class public():
 
         return fig
 
+# placeholder for possible implementation of private company search
 class private():
     
     def example():
