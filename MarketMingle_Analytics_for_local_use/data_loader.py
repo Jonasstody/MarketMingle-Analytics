@@ -22,7 +22,7 @@ import plotly.express as px #advanced charting
 
 class public():
     def get_comp_desc(ticker):
-        #General Company Description
+        # General Company Description
         try:
             desc = yq.Ticker(ticker).asset_profile[ticker]['longBusinessSummary']
         except:
@@ -108,8 +108,8 @@ class public():
         return base_dict['current_price'], base_dict['change'], quote_caption, table
 
     def get_hist_price_chart(ticker,timeframe,frequency):
-        #full pull for historic price data, for further insight into used timeframes and frequencies check main.py in the price chart section
-        #use of streamlit_lightweight_charts
+        # full pull for historic price data, for further insight into used timeframes and frequencies check main.py in the price chart section
+        # use of streamlit_lightweight_charts
         hist_data = pd.DataFrame(yf.Ticker(ticker).history(period=timeframe,interval=frequency)[['Close']]).to_dict('index')
         temp_hist_data = []
         for element in hist_data.keys():
@@ -156,9 +156,9 @@ class public():
         ], timeframe)
 
     def get_fin_chart(ticker,company_name):
-        #Revenue as bars, net income margin and EBIDTA margin as lines
-        #use of matplotlib
-        #EBITDA not always availabe therefore two possibilities for build
+        # Revenue as bars, net income margin and EBIDTA margin as lines
+        # use of matplotlib
+        # EBITDA not always availabe therefore two possibilities for build
         try:
             df = yq.Ticker(ticker).income_statement()
             try:
@@ -384,7 +384,7 @@ class public():
             except:
                 pass
         
-        #helper function
+        # helper function
         def reformat_time(time):
             return dt.fromtimestamp(time).strftime('%d.%m.%Y')
         
@@ -491,7 +491,7 @@ class public():
             
                         total = data['governanceScore']+data['socialScore']+data['environmentScore']
 
-                        #esg chart - supported by ChatGPT for deployment
+                        # esg chart - supported by ChatGPT for deployment
                         chart = {'$schema':'https://vega.github.io/schema/vega-lite/v2.json',
                                 'data':{'values':df_data.to_dict(orient='records')},
                                 'layer':[{'mark':{'type':'bar', 'color':'red'},
@@ -666,11 +666,11 @@ class public():
                 quarter = 'Q4'
             return quarter
 
-        #content for info text
+        # content for info text
         end_fin_year_init = inc_stmt_a_init['asOfDate'].to_list()[0][:5].replace('-','.')
         end_fin_year_h2h = inc_stmt_a_h2h['asOfDate'].to_list()[0][:5].replace('-','.')
 
-        #check for currency match, if no match. get conversion rate + set helper texts
+        # check for currency match, if no match. get conversion rate + set helper texts
         curr_init = inc_stmt_a_init['currencyCode'].iloc[0]
         curr_h2h = inc_stmt_a_h2h['currencyCode'].iloc[0]
         helper_text_one = f'''{name_init}'s financial year ends on the {end_fin_year_init} of the repective year. 
@@ -683,7 +683,7 @@ class public():
             exchange_rate = 1
             helper_text_two = ''
 
-        #yearly revenue
+        # yearly revenue
         data_chart_one_a = []
         for element in inc_stmt_a_init['asOfDate'].to_list():
             period = f'FY {element[len(element)-2:]}'
@@ -697,7 +697,7 @@ class public():
             revenue = int(inc_stmt_a_h2h.loc[inc_stmt_a_h2h['asOfDate']==element]['TotalRevenue'].iloc[0]/exchange_rate)
             data_chart_one_a.append({'Company':company,'Period':period,'Value':revenue})
         
-        #quarterly revenue
+        # quarterly revenue
         data_chart_one_q = []
         for element in inc_stmt_q_init['asOfDate'].to_list():
             quarter = quarter_check(element)
@@ -713,7 +713,7 @@ class public():
             revenue = int(inc_stmt_q_h2h.loc[inc_stmt_q_h2h['asOfDate']==element]['TotalRevenue'].iloc[0]/exchange_rate)
             data_chart_one_q.append({'Company':company,'Period':period,'Value':revenue})
         
-        #annual net income
+        # annual net income
         data_chart_two_a = []
         for element in inc_stmt_a_init['asOfDate'].to_list():
             period = f'FY {element[len(element)-2:]}'
@@ -728,7 +728,7 @@ class public():
             data_chart_two_a.append({'Company':company,'Period':period,'Value':net_income})
         
         
-        #quarterly net income
+        # quarterly net income
         data_chart_two_q = []
         for element in inc_stmt_q_init['asOfDate'].to_list():
             quarter = quarter_check(element)
@@ -744,7 +744,7 @@ class public():
             net_income = int(inc_stmt_q_h2h.loc[inc_stmt_q_h2h['asOfDate']==element]['NetIncome'].iloc[0]/exchange_rate)
             data_chart_two_q.append({'Company':company,'Period':period,'Value':net_income})
             
-        # helper function to build teh respective graphs
+        # helper function to build the respective graphs
         def build_chart(data):
             chart = {"data": {"values": data},
                     "mark": "bar",
@@ -765,7 +765,7 @@ class public():
         
         
     def get_h2h_fin_ratios(ticker_init,ticker_h2h):
-        #reliance on previous funtion to fetch needed kpis
+        # reliance on previous funtion to fetch needed kpis
         data_init, curr_init = public.get_key_fin_stats(ticker_init)
         data_h2h, curr_h2h = public.get_key_fin_stats(ticker_h2h)
 
@@ -784,8 +784,9 @@ class public():
         data_h2h = yq.Ticker(ticker_h2h).earnings[ticker_h2h]['earningsChart']['quarterly']
         
         
-        #collect data & get fitting labels 'beat' / 'miss' / ''
+        # collect data & get fitting labels 'beat' / 'miss' / ''
         consolidated_data = []
+        # sort raw data into frame + add label ('beat'/'miss'/'')
         for element in data_init:
             if element['actual'] > element['estimate']:
                 caption = 'beat'
@@ -795,7 +796,7 @@ class public():
                 caption = 'miss'
             consolidated_data.append({'company':ticker_init.upper(),'id':f'{ticker_init.upper()} Actual','type':'Actual','timeframe':element['date'],'value':element['actual'],'caption':caption})
             consolidated_data.append({'company':ticker_init.upper(),'id':f'{ticker_init.upper()} Estimate','type':'Estimate','timeframe':element['date'],'value':element['estimate']})
-        
+        # same for h2h company
         for element in data_h2h:
             if element['actual'] > element['estimate']:
                 caption = 'beat'
@@ -805,9 +806,10 @@ class public():
                 caption = 'miss'
             consolidated_data.append({'company':ticker_h2h.upper(),'id':f'{ticker_h2h.upper()} Actual','type':'Actual','timeframe':element['date'],'value':element['actual'],'caption':caption})
             consolidated_data.append({'company':ticker_h2h.upper(),'id':f'{ticker_h2h.upper()} Estimate','type':'Estimate','timeframe':element['date'],'value':element['estimate']})
-            
+        
         consolidated_data = pd.DataFrame(consolidated_data)    
 
+        # set color scheme
         color_map = {f'{ticker_init.upper()} Actual':'rgb(229,61,62)',
                     f'{ticker_init.upper()} Estimate':'rgb(255,173,174)',
                     f'{ticker_h2h.upper()} Actual':'rgb(177,156,217)',
@@ -816,6 +818,7 @@ class public():
         fig = px.scatter(consolidated_data, x='timeframe', y='value', color='id', symbol='type',
                 text='caption', hover_name='id',color_discrete_map=color_map)
 
+        # adjust figure
         fig.update_traces(textposition='bottom right')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5))
         fig.update_layout(xaxis=dict(title_text=''),yaxis=dict(title_text='Earnings per Share'))
@@ -823,6 +826,7 @@ class public():
 
         return fig
 
+# placeholder for possible implementation of private company search
 class private():
     
     def example():
