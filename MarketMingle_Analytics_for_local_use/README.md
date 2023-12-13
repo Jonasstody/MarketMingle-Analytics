@@ -20,8 +20,6 @@ the code has all basic functionalities to add a secondary search for private com
 # CREDITS
 for CSS & HTML code parts in a streamlit.markdown(allow_unsafe_html=True) context we relied on ChatGPT
 
-add credits for packages
-
 # APPEARANCE
 The App is set to always start up in its dark theme (via the .streamlit/config.toml file), we chose to solely rely on the dark theme as streamlit currently does not offer to dynamically fetch the current theme used, so non-streamlit parts, like all charts in this app, can not be adjusted to the theme and therefore a different theme would distort the user interface. 
 Therefore users are advised to not change the theme in the apps settings, a possibility we unfortunately can't prevent
