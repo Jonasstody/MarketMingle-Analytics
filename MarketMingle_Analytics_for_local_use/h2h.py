@@ -271,6 +271,7 @@ if st.session_state.search_input != 'n/a' and st.session_state.search_input_h2h 
                 data = public.get_h2h_fin_ratios(ticker,ticker_h2h)
                 for element in data:
                     build_h2h_row(element[0],element[1],element[2],3)
+                    st.markdown('<div><br></div>',unsafe_allow_html=True)
                     
             with earnings_container:
                 st.plotly_chart(public.get_earnings_chart_h2h(ticker,ticker_h2h),use_container_width=True)
