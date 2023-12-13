@@ -20,6 +20,7 @@ if 'search_input_h2h' not in st.session_state:
     st.session_state['search_input_h2h'] = 'n/a'
 
 # start up values for search order
+# not neccessary for current structure but allow later implementation for secondary search
 is_public = False
 is_sus_private = False
 is_private = False
