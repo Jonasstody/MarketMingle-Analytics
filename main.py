@@ -1,4 +1,4 @@
-#Streamlit & Components - add credits
+#Streamlit & Components
 import streamlit as st
 from st_pages import Page, show_pages
 
@@ -8,41 +8,37 @@ import general_worker as gw
 
 #other
 import pandas as pd
+import toml
 
-#GERNERAL 
-#strucure (in the works): one respective file that handles the visuals for the subpage and helper files for background activity e.g. data pulls, building chart
-#the code has all basic functionalities to add a secondary search for private companies incase the public company search does not return any results, at the moment not used due to time constraints
 
-#credit html & css code mostly to chatgpt + add explanation why used rather than pure streamlit whenever used
+# https://github.com/Jonasstody/MarketMingle-Analytics
 
-#application will always start up in dark theme, change to light theme is possible, but will distort some of the graphics; 
-#hard to implement/fix as streamlit is currently not able to provide the current theme through a python request, so no chance to change individual elements dynamically
 
 st.set_page_config(layout='wide')
 
-#initalize neccessary var
+# initalize neccessary streamlit.session_state variables
+# session_state allows variables to be stored and accessed across multiple pages
 if 'search_input' not in st.session_state:
     st.session_state['search_input'] = 'n/a'
-    
-if 'ticker_symbol' or 'name' not in st.session_state:
-    st.session_state['ticker_symbol'] = 'n/a'
-    st.session_state['name'] = 'n/a'
     
 if 'private_check_done' not in st.session_state:
     st.session_state['private_check_done'] = False
 
+
+# start up values for search order
+# related to private company search implementation
 is_public = False
 is_sus_private = False
 is_private = False
 
 
-#set subpages and link to respective files
+# set subpages and link to respective files
 show_pages([Page('main.py','Overview'),
             Page('financials.py','Financials'),
             Page('h2h.py','Head 2 Head')])
 
 
-#remove border around form elements
+# remove border around streamlit.form elements
 remove_border_search = r'''
     <style>
         [data-testid="stForm"] {border: 0px}
@@ -51,10 +47,12 @@ remove_border_search = r'''
 st.markdown(remove_border_search, unsafe_allow_html=True)
 
 
-#search bar & button as streamlit form
-#if previous search in the same session exists, search is automatically restarted, otherwise initial search is started
-if st.session_state.search_input != 'n/a': #search_input is used as a cached variable across pages and for usage comment above
+# search bar & button as streamlit form
+# if previous search in the same session exists, search is automatically restarted when entering the 'Overview' page, otherwise initial search is started (else statement at the bottom)
+if st.session_state.search_input != 'n/a':
+    # search input exists, so we check if we can find a matching public company
     is_public, is_sus_private, ticker, name = gw.check_if_public(st.session_state.search_input)
+    
     with st.form(key='seach_bar'):
         search_bar, search_button = st.columns([5,1])
         with search_bar:
@@ -62,24 +60,25 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
         with search_button:
             isclick = st.form_submit_button('Start Search',use_container_width=True)
             if isclick:
+                # update session_satte.search_input and then the page is reloaded
                 st.session_state.search_input = search_name
                 st.rerun()
     
-    #Main funciontality
+    # Public company successfully assigned
     if is_public:
-        st.session_state['name'] = name
-        st.session_state['ticker'] = ticker
+        
         st.session_state['private_check_done'] = False
         
-        #profile section
+        # Name & Description
         profile_container = st.container()
-        #title
+        # Company name
         profile_container.title(name)
-        #description
+        # Description
         profile_container.write(public.get_comp_desc(ticker))
         
         profile_container.divider()
-        #kpis
+        
+        # Headquarter Location (City, Country), Full Time Employees, Website Link, Sector, Industry
         hq_location, employee_count, website, sector, industry = profile_container.container().columns([1,1,1,1,1])
         profile_data = public.get_general_company_kpis(ticker)
         with hq_location:
@@ -89,6 +88,8 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
             st.write(profile_data['FTE'])
             st.caption('Full Time Employees')
         with website:
+            # website link shortend to look better
+            # html used to allow for full link functionality + custom design
             website_link = profile_data['Website']
             try:
                 website_text = website_link[website_link.find('www.')+4:]
@@ -103,32 +104,32 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
         with industry:
             st.write(profile_data['Industry'])
             st.caption('Industry')
-            
-            
+                
         st.divider() 
-        #price section
+        
+        # Layout for current price, related kpis and historical price chart
         price_container = st.container()
         current_price_container, price_chart_container = price_container.columns([3,7])
         
-        #current price
+        # Current price & KPIs
         current_price, p_change, quote_caption, current_price_table = public.get_current_price_data(ticker)
         try:
+            # chack if change is + or - to determine color
             if p_change >= 0:
                 p_change_text = f'<font color="green">+{p_change}%</font>'
             else:
                 p_change_text = f'<font color="red">{p_change}%</font>'
         except:
             p_change_text = f'<font color="white">n/a</font>'
-        current_price_container.write(
-            f'<span style="font-size: 56px; font-weight: bold;">{current_price}</span> <span style="font-size: 24px;">{p_change_text}</span>',
-            unsafe_allow_html=True
-        )
-
+        # display price & change in line
+        current_price_container.write(f'<span style="font-size: 56px; font-weight: bold;">{current_price}</span> <span style="font-size: 24px;">{p_change_text}</span>',
+            unsafe_allow_html=True)
+        # display caption with used exchange, currency, date and time of quote 
         current_price_container.caption(f'<p style="margin-top: -30px;">{quote_caption}</p>', unsafe_allow_html=True)
-        
+        # table with Market Cap, Forward P/E, Beta (5y Monthly) and Dividend Yield (trailing)
         current_price_container.dataframe(pd.DataFrame(current_price_table),hide_index=True,use_container_width=True)
         
-        #price chart
+        # historical price chart for 1 Day, 1 Month, 1 Year and the max available time
         price_chart_container.subheader('Share Price Development')
         price_one_day, price_one_month, price_twelve_months, price_all_time = price_chart_container.tabs(['1 Day','1 Month','12 Months','All Time'])
         with price_one_day:
@@ -140,31 +141,37 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
         with price_all_time:
             public.get_hist_price_chart(ticker,'max','5d')
             
-            
         st.divider()
-        #financials
+        
+        # Layout for financial chart & KPI table
         financials_container = st.container()
         financials_graph_container, key_stats_container = financials_container.columns([2,1])
 
-        #graph & key stats
+        # data
         financials_chart, info_text, helper_text = public.get_fin_chart(ticker,name)
         key_fin_stats, fin_currency = public.get_key_fin_stats(ticker)
+        
+        # header with helper text that indicates end of the companies financial year
         financials_graph_container.subheader('Financial Development',help=helper_text)
         with financials_graph_container:
+            # check if graph available
             if isinstance(financials_chart,str):
                 st.write(financials_chart)
             else:
+                # info text that indicates scale i.e. millions/billions etc. and used currency
                 st.write(f'{info_text} of {fin_currency}')
+                # display graph
                 st.pyplot(financials_chart)
 
+        # table with  Enterprise Value, EV/Revenue, EV/EBITDA, Debt/Equity, Quick Ratio, Current Ratio, Return on Assets, Return on Equity
         key_stats_container.subheader('Key Stats')
         key_stats_container.dataframe(pd.DataFrame({'Indicator':key_fin_stats.keys(),'Value':key_fin_stats.values()},index=range(len(key_fin_stats))),
                                     hide_index=True)
         
-        
-        
         st.divider()
 
+        
+        # Leadership table and top institutional investors pie chart in line
         top_inst_holders_container, leadership_container = st.columns([1.4,1])
         top_inst_holders_container.subheader('Top Institutional Holders',help='To isolate an item, double-click the name. To blend it out, single-click the name.')
         fig = public.get_top_inst_holders(ticker)
@@ -175,9 +182,10 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
             
         leadership_container.subheader('Company Leadership')
         leadership_container.dataframe(public.get_company_leadership(ticker),hide_index=True,use_container_width=True)
-                
+            
         st.divider()
-        #10 recent news
+        
+        #10 recent news headlines related to the company
         news_container = st.container()
         with news_container:
             st.subheader('Recent News')
@@ -188,16 +196,19 @@ if st.session_state.search_input != 'n/a': #search_input is used as a cached var
                     publisher = row['Publisher']
                     date = row['Date']
                     link = row['Link']
+                    # displayed using html to alter text and styling while maintaing link functionalities
                     st.markdown(f'<a style="color: white;" href="{link}">{title} ({publisher}, {date})</a></span>', unsafe_allow_html=True)
             except:
                 st.write(search)
         
+    # posssible check if no public company can be assigned to the search    
     elif is_sus_private:
         st.session_state['name'] = 'n/a'
         st.session_state['ticker'] = 'n/a'
         if gw.check_if_private(st.session_state.search_input):
             st.session_state['private_check_done'] = True
-        
+    
+    # secondary search returned a result, features for private companies can be build here
     elif is_private:
         pass
 
