@@ -8,7 +8,7 @@ visit the web version of this app under https://marketmingleanalytics.streamlit.
 
 be advised that the AI feature has been removed in the web version
 
-the full code for local deployment can be found under in the /MarketMingle_Analytics_for_local_use folder
+the full code for local deployment can be found in the /MarketMingle_Analytics_for_local_use folder
 
 # STRUCTURE
 one respective file that handles the visuals for the subpage and two helper files (data_loader.py & general_worker.py) to handle data operations and data pulls
