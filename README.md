@@ -1,7 +1,5 @@
 # MarketMingle-Analytics
-
-### Demystify the Market: Your Path to Effortless Company Comparisons!
-
+A streamlit based app allowing the user to retrieve comprehensive data about publically listed companies and put two public companies Head to Head to eachother in a comparison.
 
 # ABOUT
 visit the web version of this app under https://marketmingleanalytics.streamlit.app/
